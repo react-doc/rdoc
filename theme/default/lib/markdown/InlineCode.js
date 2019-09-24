@@ -16,7 +16,8 @@ export default class Canvas extends PureComponent {
     });
   }
   render() {
-    const code = this.props.value.replace(/^__dome__/, '').replace(/\\`/g, '`');
+    const sourceCode = this.props.value || '';
+    const code = sourceCode.replace(/^__dome__/, '').replace(/\\`/g, '`');
     const PreCode = height => (
       <pre className={styles.highlight} style={{ height }}>
         <code ref={node => this.codeDom = node} className={classNames('hljs', { [`language-${this.props.language}`]: this.props.language })}>
@@ -24,15 +25,25 @@ export default class Canvas extends PureComponent {
         </code>
       </pre>
     );
-    if (/^__dome__/.test(this.props.value)) {
+    const isPreview = /^(html|htm)$/.test(this.props.language);
+
+    if (/^__dome__/.test(sourceCode)) {
       return (
         <div className={styles.demo}>
-          <div className={styles.demoBody} id={this.playerId}>
-            {/^(html|htm)$/.test(this.props.language) && <div dangerouslySetInnerHTML={{ __html: code }} />}
-          </div>
+          {isPreview && (
+            <div className={styles.demoBody} id={this.playerId}>
+              <div dangerouslySetInnerHTML={{ __html: code }} />
+            </div>
+          )}
           {PreCode(this.state.height)}
-          <div className={styles.demoControl} onClick={this.onClick.bind(this)}>
+          <div
+            className={classNames(styles.demoControl, {
+              [styles.isPreview]: !isPreview && this.state.height !== 0,
+            })}
+            onClick={this.onClick.bind(this)}
+          >
             {this.state.height === 0 ? '显示' : '隐藏'}代码
+            {this.props.language && <div className={styles.language}>{this.props.language}</div>}
           </div>
         </div>
       );

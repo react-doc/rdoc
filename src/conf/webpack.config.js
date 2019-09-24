@@ -1,6 +1,14 @@
 const PATH = require('path');
-const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+const webpack = require('webpack');
+const WebpackBar = require('webpackbar');
+const UPATH = require('upath');
 const paths = require('./path');
+const pkg = require('../../package.json');
+
+const define = { FOOTER: null };
+if (paths.rdocConf && paths.rdocConf.footer && typeof paths.rdocConf.footer === 'string') {
+  define.FOOTER = JSON.stringify(paths.rdocConf.footer);
+}
 
 module.exports = {
   entry: {},
@@ -9,6 +17,11 @@ module.exports = {
     publicPath: paths.publicPath,
     filename: 'js/[name].[hash:8].js',
     chunkFilename: 'js/[name].[hash:8].js',
+  },
+  resolve: {
+    alias: {
+      'rdoc-theme': UPATH.normalizeSafe(paths.appThemePath),
+    },
   },
   module: {
     rules: [
@@ -80,9 +93,10 @@ module.exports = {
     ],
   },
   plugins: [
-    new ProgressBarPlugin({
-      format: ` build [:bar] ${':percent'.green} (:elapsed seconds)`,
-      clear: false,
+    new WebpackBar({ name: pkg.name }),
+    new webpack.DefinePlugin({
+      VERSION: JSON.stringify(pkg.version),
+      ...define,
     }),
   ],
   node: {
